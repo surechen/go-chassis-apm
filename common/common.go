@@ -21,16 +21,16 @@ import "context"
 
 //Options for application performance manage client init
 type Options struct {
-	APMName      string
-	ServerUri string
+	APMName        string
+	ServerUri      string
 	MicServiceName string
 }
 
 //SpanContext for span info
 type SpanContext struct {
-	Ctx  context.Context
+	Ctx           context.Context
 	OperationName string
-	ParentContext string
+	TraceContext  map[string]string
 	Peer 		  string
 	Method 	      string
 	URL           string

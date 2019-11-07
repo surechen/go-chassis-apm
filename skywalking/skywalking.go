@@ -30,9 +30,10 @@ import (
 )
 
 const (
-	HTTPPrefix             = "http://"
-	CrossProcessProtocolV2 = "Sw6"
-	Name                   = "skywalking"
+	HTTPPrefix                = "http://"
+	CrossProcessProtocolV2    = "Sw6"
+	Name                      = "skywalking"
+	DefaultTraceContext = ""
 )
 
 const (
@@ -50,7 +51,10 @@ type SkyWalkingClient struct {
 func (s *SkyWalkingClient) CreateEntrySpan(sc *common.SpanContext) (interface{}, error) {
 	openlogging.GetLogger().Debugf("CreateEntrySpan begin. spanctx:%#v", sc)
 	span, ctx, err := s.tracer.CreateEntrySpan(sc.Ctx, sc.OperationName, func() (string, error) {
-		return sc.ParentContext, nil
+		if sc.TraceContext != nil {
+			return sc.TraceContext[CrossProcessProtocolV2], nil
+		}
+		return DefaultTraceContext, nil
 	})
 	if err != nil {
 		openlogging.GetLogger().Errorf("CreateExitSpan error:%s", err.Error())
@@ -68,7 +72,7 @@ func (s *SkyWalkingClient) CreateEntrySpan(sc *common.SpanContext) (interface{},
 func (s *SkyWalkingClient) CreateExitSpan(sc *common.SpanContext) (interface{}, error) {
 	openlogging.GetLogger().Debugf("CreateExitSpan begin. spanctx:%v", sc)
 	span, err := s.tracer.CreateExitSpan(sc.Ctx, sc.OperationName, sc.Peer, func(header string) error {
-		sc.ParentContext = header
+		sc.TraceContext[CrossProcessProtocolV2] = header
 		return nil
 	})
 	if err != nil {
@@ -98,7 +102,10 @@ func (s *SkyWalkingClient) CreateSpans(sc *common.SpanContext) ([]interface{}, e
 	openlogging.GetLogger().Debugf("CreateSpans begin. spanctx:%#v", sc)
 	var spans []interface{}
 	span, ctx, err := s.tracer.CreateEntrySpan(sc.Ctx, sc.OperationName, func() (string, error) {
-		return sc.ParentContext, nil
+		if sc.TraceContext != nil {
+			return sc.TraceContext[CrossProcessProtocolV2], nil
+		}
+		return DefaultTraceContext, nil
 	})
 	if err != nil {
 		openlogging.GetLogger().Errorf("CreateSpans error:%s", err.Error())
@@ -112,7 +119,7 @@ func (s *SkyWalkingClient) CreateSpans(sc *common.SpanContext) ([]interface{}, e
 	span.SetComponent(HTTPServerComponentID)
 	spans = append(spans, &span)
 	spanExit, err := s.tracer.CreateExitSpan(ctx, sc.OperationName, sc.Peer, func(header string) error {
-		sc.ParentContext = header
+		sc.TraceContext[CrossProcessProtocolV2] = header
 		return nil
 	})
 	if err != nil {
