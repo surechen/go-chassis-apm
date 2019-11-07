@@ -30,7 +30,8 @@ type Options struct {
 type SpanContext struct {
 	Ctx           context.Context
 	OperationName string
-	TraceContext  map[string]string
+	ParTraceCtx     map[string]string
+	TraceCtx      map[string]string
 	Peer 		  string
 	Method 	      string
 	URL           string

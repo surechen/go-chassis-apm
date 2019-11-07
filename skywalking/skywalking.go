@@ -51,8 +51,8 @@ type SkyWalkingClient struct {
 func (s *SkyWalkingClient) CreateEntrySpan(sc *common.SpanContext) (interface{}, error) {
 	openlogging.GetLogger().Debugf("CreateEntrySpan begin. spanctx:%#v", sc)
 	span, ctx, err := s.tracer.CreateEntrySpan(sc.Ctx, sc.OperationName, func() (string, error) {
-		if sc.TraceContext != nil {
-			return sc.TraceContext[CrossProcessProtocolV2], nil
+		if sc.ParTraceCtx != nil {
+			return sc.ParTraceCtx[CrossProcessProtocolV2], nil
 		}
 		return DefaultTraceContext, nil
 	})
@@ -72,7 +72,7 @@ func (s *SkyWalkingClient) CreateEntrySpan(sc *common.SpanContext) (interface{},
 func (s *SkyWalkingClient) CreateExitSpan(sc *common.SpanContext) (interface{}, error) {
 	openlogging.GetLogger().Debugf("CreateExitSpan begin. spanctx:%v", sc)
 	span, err := s.tracer.CreateExitSpan(sc.Ctx, sc.OperationName, sc.Peer, func(header string) error {
-		sc.TraceContext[CrossProcessProtocolV2] = header
+		sc.TraceCtx[CrossProcessProtocolV2] = header
 		return nil
 	})
 	if err != nil {
@@ -102,8 +102,8 @@ func (s *SkyWalkingClient) CreateSpans(sc *common.SpanContext) ([]interface{}, e
 	openlogging.GetLogger().Debugf("CreateSpans begin. spanctx:%#v", sc)
 	var spans []interface{}
 	span, ctx, err := s.tracer.CreateEntrySpan(sc.Ctx, sc.OperationName, func() (string, error) {
-		if sc.TraceContext != nil {
-			return sc.TraceContext[CrossProcessProtocolV2], nil
+		if sc.ParTraceCtx != nil {
+			return sc.ParTraceCtx[CrossProcessProtocolV2], nil
 		}
 		return DefaultTraceContext, nil
 	})
@@ -119,7 +119,7 @@ func (s *SkyWalkingClient) CreateSpans(sc *common.SpanContext) ([]interface{}, e
 	span.SetComponent(HTTPServerComponentID)
 	spans = append(spans, &span)
 	spanExit, err := s.tracer.CreateExitSpan(ctx, sc.OperationName, sc.Peer, func(header string) error {
-		sc.TraceContext[CrossProcessProtocolV2] = header
+		sc.TraceCtx[CrossProcessProtocolV2] = header
 		return nil
 	})
 	if err != nil {
