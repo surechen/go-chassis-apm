@@ -35,6 +35,37 @@ func InstallClientPlugins(name string, f func(common.Options) (client.ApmClient,
 	openlogging.Info("Install apm client: " + name)
 }
 
+//CreateEntrySpan
+func CreateEntrySpan(s *common.SpanContext, op common.Options) (interface{}, error) {
+	openlogging.Info("CreateSpans")
+	if client, ok := apmClients[op.APMName]; ok {
+		openlogging.Info("client.CreateSpans")
+		return client.CreateEntrySpan(s)
+	}
+	var spans interface{}
+	return spans, nil
+}
+
+//CreateExitSpan
+func CreateExitSpan(s *common.SpanContext, op common.Options) (interface{}, error) {
+	openlogging.Info("CreateSpans")
+	if client, ok := apmClients[op.APMName]; ok {
+		openlogging.Info("client.CreateSpans")
+		return client.CreateExitSpan(s)
+	}
+	var span interface{}
+	return span, nil
+}
+
+//EndSpan use invocation to make spans of apm end
+func EndSpan(span interface{}, status int, op common.Options) error {
+	openlogging.Info("EndSpans" + strconv.Itoa(status))
+	if client, ok := apmClients[op.APMName]; ok {
+		return client.EndSpan(span, status)
+	}
+	return nil
+}
+
 //CreateSpans use invocation to make spans for apm
 func CreateSpans(s *common.SpanContext, op common.Options) ([]interface{}, error) {
 	openlogging.Info("CreateSpans")
