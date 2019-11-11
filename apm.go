@@ -21,10 +21,7 @@ import (
 	"github.com/go-chassis/go-chassis-apm/client"
 	"github.com/go-chassis/go-chassis-apm/common"
 	"github.com/go-mesh/openlogging"
-	"strconv"
 )
-
-//ApmClient is an interface for application performance manage client
 
 var apmClientPlugins = make(map[string]func(common.Options) (client.ApmClient, error))
 var apmClients = make(map[string]client.ApmClient)
@@ -35,53 +32,34 @@ func InstallClientPlugins(name string, f func(common.Options) (client.ApmClient,
 	openlogging.Info("Install apm client: " + name)
 }
 
-//CreateEntrySpan
+//CreateEntrySpan create entry span
 func CreateEntrySpan(s *common.SpanContext, op common.Options) (interface{}, error) {
-	openlogging.Info("CreateSpans")
+	openlogging.GetLogger().Debugf("CreateEntrySpan: %v", op)
 	if client, ok := apmClients[op.APMName]; ok {
-		openlogging.Info("client.CreateSpans")
+		openlogging.GetLogger().Debugf("CreateEntrySpan: %v", op)
 		return client.CreateEntrySpan(s)
 	}
 	var spans interface{}
 	return spans, nil
 }
 
-//CreateExitSpan
+//CreateExitSpan create exit span
 func CreateExitSpan(s *common.SpanContext, op common.Options) (interface{}, error) {
-	openlogging.Info("CreateSpans")
+	openlogging.GetLogger().Debugf("CreateExitSpan: %v", op)
 	if client, ok := apmClients[op.APMName]; ok {
-		openlogging.Info("client.CreateSpans")
+		openlogging.GetLogger().Debugf("CreateExitSpan: %v", op)
 		return client.CreateExitSpan(s)
 	}
 	var span interface{}
 	return span, nil
 }
 
-//EndSpan use invocation to make spans of apm end
+//EndSpan end span
 func EndSpan(span interface{}, status int, op common.Options) error {
-	openlogging.Info("EndSpans" + strconv.Itoa(status))
+	openlogging.GetLogger().Debugf("EndSpan: %v, status:%d", op, status)
 	if client, ok := apmClients[op.APMName]; ok {
+		openlogging.GetLogger().Debugf("EndSpan: %v, status:%d", op, status)
 		return client.EndSpan(span, status)
-	}
-	return nil
-}
-
-//CreateSpans use invocation to make spans for apm
-func CreateSpans(s *common.SpanContext, op common.Options) ([]interface{}, error) {
-	openlogging.Info("CreateSpans")
-	if client, ok := apmClients[op.APMName]; ok {
-		openlogging.Info("client.CreateSpans")
-		return client.CreateSpans(s)
-	}
-	var spans []interface{}
-	return spans, nil
-}
-
-//EndSpans use invocation to make spans of apm end
-func EndSpans(spans []interface{}, status int, op common.Options) error {
-	openlogging.Info("EndSpans" + strconv.Itoa(status))
-	if client, ok := apmClients[op.APMName]; ok {
-		return client.EndSpans(spans, status)
 	}
 	return nil
 }

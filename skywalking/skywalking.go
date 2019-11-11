@@ -18,7 +18,6 @@
 package skywalking
 
 import (
-	"container/list"
 	"github.com/go-chassis/go-chassis-apm"
 	"github.com/go-chassis/go-chassis-apm/client"
 	"github.com/go-chassis/go-chassis-apm/common"
@@ -26,14 +25,15 @@ import (
 	"github.com/tetratelabs/go2sky"
 	"github.com/tetratelabs/go2sky/reporter"
 	skycom "github.com/tetratelabs/go2sky/reporter/grpc/common"
+	"reflect"
 	"strconv"
 )
 
 const (
-	HTTPPrefix                = "http://"
-	CrossProcessProtocolV2    = "Sw6"
-	Name                      = "skywalking"
-	DefaultTraceContext = ""
+	HTTPPrefix             = "http://"
+	CrossProcessProtocolV2 = "Sw6"
+	Name                   = "skywalking"
+	DefaultTraceContext    = ""
 )
 
 const (
@@ -43,8 +43,9 @@ const (
 
 //SkyWalkingClient for connecting and reporting to skywalking server
 type SkyWalkingClient struct {
-	reporter go2sky.Reporter
-	tracer   *go2sky.Tracer
+	reporter    go2sky.Reporter
+	tracer      *go2sky.Tracer
+	ServiceType int32
 }
 
 //CreateEntrySpan create entry span
@@ -57,13 +58,14 @@ func (s *SkyWalkingClient) CreateEntrySpan(sc *common.SpanContext) (interface{},
 		return DefaultTraceContext, nil
 	})
 	if err != nil {
-		openlogging.GetLogger().Errorf("CreateExitSpan error:%s", err.Error())
+		openlogging.GetLogger().Errorf("CreateEntrySpan error:%s", err.Error())
 		return &span, err
 	}
+	openlogging.GetLogger().Debugf("CreateEntrySpan %v", span)
 	span.Tag(go2sky.TagHTTPMethod, sc.Method)
 	span.Tag(go2sky.TagURL, sc.URL)
 	span.SetSpanLayer(skycom.SpanLayer_Http)
-	span.SetComponent(HTTPServerComponentID)
+	span.SetComponent(s.ServiceType)
 	sc.Ctx = ctx
 	return &span, err
 }
@@ -79,73 +81,24 @@ func (s *SkyWalkingClient) CreateExitSpan(sc *common.SpanContext) (interface{}, 
 		openlogging.GetLogger().Errorf("CreateExitSpan error:%s", err.Error())
 		return &span, err
 	}
+	openlogging.GetLogger().Debugf("CreateExitSpan %v", span)
 	span.Tag(go2sky.TagHTTPMethod, sc.Method)
 	span.Tag(go2sky.TagURL, sc.URL)
 	span.SetSpanLayer(skycom.SpanLayer_Http)
-	span.SetComponent(HTTPClientComponentID)
+	span.SetComponent(s.ServiceType)
 	return &span, err
 }
 
 //EndSpan make span end and report to skywalking
 func (s *SkyWalkingClient) EndSpan(sp interface{}, statusCode int) error {
+	openlogging.GetLogger().Debugf("EndSpan real type:%v", reflect.TypeOf(sp))
 	span, ok := (sp).(*go2sky.Span)
 	if !ok || span == nil {
+		openlogging.GetLogger().Errorf("EndSpan failed. %v %v", span, ok)
 		return nil
 	}
 	(*span).Tag(go2sky.TagStatusCode, strconv.Itoa(statusCode))
 	(*span).End()
-	return nil
-}
-
-//CreateSpans create entry and exit spans for report
-func (s *SkyWalkingClient) CreateSpans(sc *common.SpanContext) ([]interface{}, error) {
-	openlogging.GetLogger().Debugf("CreateSpans begin. spanctx:%#v", sc)
-	var spans []interface{}
-	span, ctx, err := s.tracer.CreateEntrySpan(sc.Ctx, sc.OperationName, func() (string, error) {
-		if sc.ParTraceCtx != nil {
-			return sc.ParTraceCtx[CrossProcessProtocolV2], nil
-		}
-		return DefaultTraceContext, nil
-	})
-	if err != nil {
-		openlogging.GetLogger().Errorf("CreateSpans error:%s", err.Error())
-		return spans, err
-	}
-	l := list.New()
-	l.PushBack(1)
-	span.Tag(go2sky.TagHTTPMethod, sc.Method)
-	span.Tag(go2sky.TagURL, sc.URL)
-	span.SetSpanLayer(skycom.SpanLayer_Http)
-	span.SetComponent(HTTPServerComponentID)
-	spans = append(spans, &span)
-	spanExit, err := s.tracer.CreateExitSpan(ctx, sc.OperationName, sc.Peer, func(header string) error {
-		sc.TraceCtx[CrossProcessProtocolV2] = header
-		return nil
-	})
-	if err != nil {
-		openlogging.GetLogger().Errorf("CreateSpans error:%s", err.Error())
-		return spans, err
-	}
-	spanExit.Tag(go2sky.TagHTTPMethod, sc.Method)
-	spanExit.Tag(go2sky.TagURL, sc.URL)
-	spanExit.SetSpanLayer(skycom.SpanLayer_Http)
-	spanExit.SetComponent(HTTPClientComponentID)
-	spans = append(spans, &spanExit)
-	return spans, nil
-
-}
-
-//EndSpans make spans end and report to skywalking
-func (s *SkyWalkingClient) EndSpans(spans []interface{}, status int) error {
-	openlogging.GetLogger().Debugf("EndSpans spans:%u status:%#v", len(spans), status)
-	for i := len(spans) - 1; i >= 0; i-- {
-		span, ok := (spans[i]).(*go2sky.Span)
-		if !ok || spans[i] == nil {
-			continue
-		}
-		(*span).Tag(go2sky.TagStatusCode, strconv.Itoa(status))
-		(*span).End()
-	}
 	return nil
 }
 
@@ -161,12 +114,14 @@ func NewApmClient(op common.Options) (client.ApmClient, error) {
 		return &client, err
 	}
 	client.tracer, err = go2sky.NewTracer(op.MicServiceName, go2sky.WithReporter(client.reporter))
+	//not wait for register here
 	//t.WaitUntilRegister()
 	if err != nil {
 		openlogging.GetLogger().Errorf("NewTracer error:%s", err.Error())
 		return &client, err
 
 	}
+	client.ServiceType = op.MicServiceType
 	openlogging.GetLogger().Debugf("NewApmClient succ. name:%s uri:%s", op.APMName, op.ServerUri)
 	return &client, err
 }

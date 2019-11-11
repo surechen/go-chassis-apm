@@ -24,19 +24,19 @@ type Options struct {
 	APMName        string
 	ServerUri      string
 	MicServiceName string
+	MicServiceType int32
 }
 
 //SpanContext for span info
 type SpanContext struct {
 	Ctx           context.Context
 	OperationName string
-	ParTraceCtx     map[string]string
+	ParTraceCtx   map[string]string
 	TraceCtx      map[string]string
-	Peer 		  string
-	Method 	      string
+	Peer          string
+	Method        string
 	URL           string
 	ComponentId   string
 	SpanLayerId   string
 	ServiceName   string
 }
-
