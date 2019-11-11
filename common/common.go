@@ -24,7 +24,7 @@ type Options struct {
 	APMName        string
 	ServerUri      string
 	MicServiceName string
-	MicServiceType int32
+	MicServiceType int
 }
 
 //SpanContext for span info

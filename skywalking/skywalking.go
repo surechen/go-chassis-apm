@@ -121,7 +121,7 @@ func NewApmClient(op common.Options) (client.ApmClient, error) {
 		return &client, err
 
 	}
-	client.ServiceType = op.MicServiceType
+	client.ServiceType = int32(op.MicServiceType)
 	openlogging.GetLogger().Debugf("NewApmClient succ. name:%s uri:%s", op.APMName, op.ServerUri)
 	return &client, err
 }
