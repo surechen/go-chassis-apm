@@ -19,8 +19,7 @@ package skywalking
 
 import (
 	"github.com/go-chassis/go-chassis-apm"
-	"github.com/go-chassis/go-chassis-apm/client"
-	"github.com/go-chassis/go-chassis-apm/common"
+	"github.com/go-chassis/go-chassis-apm/tracing"
 	"github.com/go-mesh/openlogging"
 	"github.com/tetratelabs/go2sky"
 	"github.com/tetratelabs/go2sky/reporter"
@@ -49,7 +48,7 @@ type SkyWalkingClient struct {
 }
 
 //CreateEntrySpan create entry span
-func (s *SkyWalkingClient) CreateEntrySpan(sc *common.SpanContext) (interface{}, error) {
+func (s *SkyWalkingClient) CreateEntrySpan(sc *tracing.SpanContext) (interface{}, error) {
 	openlogging.GetLogger().Debugf("CreateEntrySpan begin. spanctx:%#v", sc)
 	span, ctx, err := s.tracer.CreateEntrySpan(sc.Ctx, sc.OperationName, func() (string, error) {
 		if sc.ParTraceCtx != nil {
@@ -71,7 +70,7 @@ func (s *SkyWalkingClient) CreateEntrySpan(sc *common.SpanContext) (interface{},
 }
 
 //CreateExitSpan create end span
-func (s *SkyWalkingClient) CreateExitSpan(sc *common.SpanContext) (interface{}, error) {
+func (s *SkyWalkingClient) CreateExitSpan(sc *tracing.SpanContext) (interface{}, error) {
 	openlogging.GetLogger().Debugf("CreateExitSpan begin. spanctx:%v", sc)
 	span, err := s.tracer.CreateExitSpan(sc.Ctx, sc.OperationName, sc.Peer, func(header string) error {
 		sc.TraceCtx[CrossProcessProtocolV2] = header
@@ -103,7 +102,7 @@ func (s *SkyWalkingClient) EndSpan(sp interface{}, statusCode int) error {
 }
 
 //NewApmClient init report and tracer for connecting and sending messages to skywalking server
-func NewApmClient(op common.Options) (client.ApmClient, error) {
+func NewApmClient(op tracing.TracingOptions) (apm.TracingClient, error) {
 	var (
 		err    error
 		client SkyWalkingClient

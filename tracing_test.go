@@ -3,20 +3,19 @@ package apm_test
 import (
 	"context"
 	"github.com/go-chassis/go-chassis-apm"
-	"github.com/go-chassis/go-chassis-apm/client"
-	"github.com/go-chassis/go-chassis-apm/common"
+	"github.com/go-chassis/go-chassis-apm/tracing"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
 var (
-	op common.Options
-	sc *common.SpanContext
+	op tracing.TracingOptions
+	sc *tracing.SpanContext
 )
 
 //InitOption
 func InitOption() {
-	op = common.Options{
+	op = tracing.TracingOptions{
 		APMName:        "testclient",
 		ServerUri:      "192.168.88.64:8080",
 		MicServiceName: "mesher",
@@ -25,7 +24,7 @@ func InitOption() {
 
 //InitSpanContext
 func InitSpanContext() {
-	sc = &common.SpanContext{
+	sc = &tracing.SpanContext{
 		Ctx:           context.Background(),
 		OperationName: "test",
 		ParTraceCtx:   map[string]string{},
@@ -38,17 +37,18 @@ func InitSpanContext() {
 		ServiceName:   "mesher"}
 }
 
+
 //TestClient
 type TestClient struct {
 }
 
 //CreateEntrySpan
-func (t *TestClient) CreateEntrySpan(sc *common.SpanContext) (interface{}, error) {
+func (t *TestClient) CreateEntrySpan(sc *tracing.SpanContext) (interface{}, error) {
 	return 1, nil
 }
 
 //CreateExitSpan
-func (t *TestClient) CreateExitSpan(sc *common.SpanContext) (interface{}, error) {
+func (t *TestClient) CreateExitSpan(sc *tracing.SpanContext) (interface{}, error) {
 	return 1, nil
 }
 
@@ -58,7 +58,7 @@ func (t *TestClient) EndSpan(sp interface{}, statusCode int) error {
 }
 
 //NewApmClient
-func NewApmClient(op common.Options) (client.ApmClient, error) {
+func NewApmClient(op tracing.TracingOptions) (apm.TracingClient, error) {
 	var (
 		err    error
 		client TestClient
