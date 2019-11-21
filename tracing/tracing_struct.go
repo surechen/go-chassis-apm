@@ -11,7 +11,7 @@ type SpanContext struct {
 	Peer          string
 	Method        string
 	URL           string
-	ComponentId   string
-	SpanLayerId   string
+	ComponentID   string
+	SpanLayerID   string
 	ServiceName   string
 }

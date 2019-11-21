@@ -1,9 +1,9 @@
 package tracing
 
-//TracingOptions for tracing
+//TracingOptions for tracing option
 type TracingOptions struct {
 	APMName        string
-	ServerUri      string
+	ServerURI      string
 	MicServiceName string
 	MicServiceType int
 }

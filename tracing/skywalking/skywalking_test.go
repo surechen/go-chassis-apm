@@ -35,7 +35,7 @@ var (
 func InitOption() {
 	op = tracing.TracingOptions{
 		APMName:        "skywalking",
-		ServerUri:      "192.168.88.64:8080",
+		ServerURI:      "192.168.88.64:8080",
 		MicServiceName: "mesher",
 		MicServiceType: 1}
 }
@@ -49,8 +49,8 @@ func IniSpanContext() {
 		Peer:          "test",
 		Method:        "get",
 		URL:           "/etc/url",
-		ComponentId:   "1",
-		SpanLayerId:   "11",
+		ComponentID:   "1",
+		SpanLayerID:   "11",
 		ServiceName:   "mesher"}
 }
 

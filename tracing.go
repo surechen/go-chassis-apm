@@ -55,7 +55,7 @@ func EndSpan(span interface{}, status int, op tracing.TracingOptions) error {
 
 //Init apm client
 func Init(op tracing.TracingOptions) {
-	openlogging.Info("Apm Init " + op.APMName + " " + op.ServerUri)
+	openlogging.Info("Apm Init " + op.APMName + " " + op.ServerURI)
 	f, ok := apmClientPlugins[op.APMName]
 	if ok {
 		client, err := f(op)

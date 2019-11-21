@@ -28,10 +28,11 @@ import (
 	"strconv"
 )
 
+//for skywalkinng use
 const (
 	HTTPPrefix             = "http://"
 	CrossProcessProtocolV2 = "Sw6"
-	Name                   = "skywalking"
+	SkyName                = "skywalking"
 	DefaultTraceContext    = ""
 )
 
@@ -107,7 +108,7 @@ func NewApmClient(op tracing.TracingOptions) (apm.TracingClient, error) {
 		err    error
 		client SkyWalkingClient
 	)
-	client.reporter, err = reporter.NewGRPCReporter(op.ServerUri)
+	client.reporter, err = reporter.NewGRPCReporter(op.ServerURI)
 	if err != nil {
 		openlogging.GetLogger().Errorf("NewGRPCReporter error:%s", err.Error())
 		return &client, err
@@ -121,10 +122,10 @@ func NewApmClient(op tracing.TracingOptions) (apm.TracingClient, error) {
 
 	}
 	client.ServiceType = int32(op.MicServiceType)
-	openlogging.GetLogger().Debugf("NewApmClient succ. name:%s uri:%s", op.APMName, op.ServerUri)
+	openlogging.GetLogger().Debugf("NewApmClient succ. name:%s uri:%s", op.APMName, op.ServerURI)
 	return &client, err
 }
 
 func init() {
-	apm.InstallClientPlugins(Name, NewApmClient)
+	apm.InstallClientPlugins(SkyName, NewApmClient)
 }
