@@ -36,6 +36,7 @@ const (
 	DefaultTraceContext    = ""
 )
 
+//component id for skywalking which is used for topology
 const (
 	HTTPClientComponentID = 2
 	HTTPServerComponentID = 49
