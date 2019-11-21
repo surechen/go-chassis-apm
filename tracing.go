@@ -5,7 +5,7 @@ import (
 	"github.com/go-mesh/openlogging"
 )
 
-//ApmClient for apm interface
+//TracingClient for apm interface
 type TracingClient interface {
 	CreateEntrySpan(sc *tracing.SpanContext) (interface{}, error)
 	CreateExitSpan(sc *tracing.SpanContext) (interface{}, error)

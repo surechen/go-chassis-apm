@@ -37,7 +37,6 @@ func InitSpanContext() {
 		ServiceName:   "mesher"}
 }
 
-
 //TestClient
 type TestClient struct {
 }
