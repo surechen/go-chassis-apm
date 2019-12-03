@@ -3,6 +3,7 @@ package apm
 import (
 	"github.com/go-chassis/go-chassis-apm/tracing"
 	"github.com/go-mesh/openlogging"
+	"strconv"
 )
 
 //TracingClient for apm interface
@@ -23,9 +24,8 @@ func InstallClientPlugins(name string, f func(tracing.TracingOptions) (TracingCl
 
 //CreateEntrySpan create entry span
 func CreateEntrySpan(s *tracing.SpanContext, op tracing.TracingOptions) (interface{}, error) {
-	openlogging.GetLogger().Debugf("CreateEntrySpan: %v", op)
 	if client, ok := apmClients[op.APMName]; ok {
-		openlogging.GetLogger().Debugf("CreateEntrySpan: %v", op)
+		openlogging.Debug("CreateEntrySpan:" + op.MicServiceName)
 		return client.CreateEntrySpan(s)
 	}
 	var spans interface{}
@@ -34,9 +34,8 @@ func CreateEntrySpan(s *tracing.SpanContext, op tracing.TracingOptions) (interfa
 
 //CreateExitSpan create exit span
 func CreateExitSpan(s *tracing.SpanContext, op tracing.TracingOptions) (interface{}, error) {
-	openlogging.GetLogger().Debugf("CreateExitSpan: %v", op)
 	if client, ok := apmClients[op.APMName]; ok {
-		openlogging.GetLogger().Debugf("CreateExitSpan: %v", op)
+		openlogging.Debug("CreateExitSpan:" + op.MicServiceName)
 		return client.CreateExitSpan(s)
 	}
 	var span interface{}
@@ -45,9 +44,8 @@ func CreateExitSpan(s *tracing.SpanContext, op tracing.TracingOptions) (interfac
 
 //EndSpan end span
 func EndSpan(span interface{}, status int, op tracing.TracingOptions) error {
-	openlogging.GetLogger().Debugf("EndSpan: %v, status:%d", op, status)
 	if client, ok := apmClients[op.APMName]; ok {
-		openlogging.GetLogger().Debugf("EndSpan: %v, status:%d", op, status)
+		openlogging.Debug("EndSpan: " + op.MicServiceName + "status: " + strconv.Itoa(status))
 		return client.EndSpan(span, status)
 	}
 	return nil
@@ -55,7 +53,7 @@ func EndSpan(span interface{}, status int, op tracing.TracingOptions) error {
 
 //Init apm client
 func Init(op tracing.TracingOptions) {
-	openlogging.Info("Apm Init " + op.APMName + " " + op.ServerURI)
+	openlogging.Info("apm Init " + op.APMName + " " + op.ServerURI)
 	f, ok := apmClientPlugins[op.APMName]
 	if ok {
 		client, err := f(op)
